@@ -16,6 +16,8 @@ var Splitter = contract(splitter_artifacts);
 // For application bootstrapping, check out window.addEventListener below.
 var accounts, account, splitter;
 var a,b,c;
+//s = 0x0bba448a97e82db6695f2ae41b78d7d357dfe9f7
+//a = 0x594f46cb925ebd73a364335f53ddb6ede750474a
 
 window.App = {
     start: function() {
@@ -56,12 +58,10 @@ window.App = {
         Splitter.deployed().then(function(instance) {
             splitter_i = instance;
             balance = splitter_i.getBalance.call();
-            //return {"s":balance}
             return balance;
         }).then(function(balances) {
             document.getElementById("splitter_balance").innerHTML = balances.toString(10);
         }).catch(function(e) {
-            //console.log(e);
             self.setStatus("Error getting balance; see log.", e);
         });
     },
@@ -69,17 +69,21 @@ window.App = {
     sendSplittable: function(){
         console.log("in sendSplittable")
         var self = this;
+        var txHash;
 
         var amount = parseInt(document.getElementById("amount").value);
-        var sender = document.getElementById("sender_sender").value;
+        var sender = document.getElementById("sender_addr").value;
         var splitterAddress = document.getElementById("splitter_addr").value;
 
         this.setStatus("Initiating split transaction...(hang on)");
         var splitter_i;
         Splitter.deployed().then(function(instance){
             splitter_i = instance;
-            return splitter_i.payInto({from:sender,value:amount});
-        }).then(function(){
+            txHash =  splitter_i.payInto({from:sender,value:amount});
+            console.log("is this txHash", txHash);
+            return txHash;
+        }).then(function(txHash){
+            console.log('txHash', txHash);
             self.setStatus("Transaction complete!");
             self.refreshBalance();
         }).catch(function(e){
