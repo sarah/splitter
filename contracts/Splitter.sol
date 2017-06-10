@@ -53,6 +53,7 @@ contract Splitter{
             }
 
         } else {
+            // will remove when not in dev
             NotSplitting(msg.sender, msg.value);
         }
     }
