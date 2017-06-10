@@ -16,7 +16,7 @@ var Splitter = contract(splitter_artifacts);
 // For application bootstrapping, check out window.addEventListener below.
 var accounts, account, splitter;
 var a,b,c;
-//s = 0x0bba448a97e82db6695f2ae41b78d7d357dfe9f7
+// s = 0xefd272f787e5fe34cb11d6eb3e3c78a58377661d
 //a = 0x594f46cb925ebd73a364335f53ddb6ede750474a
 
 window.App = {

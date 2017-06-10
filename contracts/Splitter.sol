@@ -1,10 +1,9 @@
 pragma solidity ^0.4.5;
 
 contract Splitter{
-    address ethSentFrom;
-    address alice = address(0x594f46cb925ebd73a364335f53ddb6ede750474a);
-    address bob = address(0x9421e7733ce28c3a31bfc9c60aba030edf8d7c6f);
-    address carol = address(0x86ed0b13d365020854f1a8f101cc002d00076726);
+    address private alice = address(0x594f46cb925ebd73a364335f53ddb6ede750474a);
+    address private bob = address(0x9421e7733ce28c3a31bfc9c60aba030edf8d7c6f);
+    address private carol = address(0x86ed0b13d365020854f1a8f101cc002d00076726);
 
     event EthIncoming(
         address indexed _sender,
@@ -35,7 +34,7 @@ contract Splitter{
     function payInto() payable {
         EthIncoming(msg.sender, msg.value);
         if (msg.sender == alice){
-            Splitting(ethSentFrom,msg.value);
+            Splitting(msg.sender,msg.value);
 
             var half = msg.value / 2;
 
