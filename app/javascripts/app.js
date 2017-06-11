@@ -79,22 +79,26 @@ window.App = {
 
     sendSplittable: function(){
         console.log("in sendSplittable")
+
         var self = this;
         var txHash;
-
         var amount = parseInt(document.getElementById("amount").value);
         var sender = document.getElementById("sender_addr").value;
         var splitterAddress = document.getElementById("splitter_addr").value;
+        var splitter_i;
 
         this.setStatus("Initiating split transaction...(hang on)");
-        var splitter_i;
+
         Splitter.deployed().then(function(instance){
+            console.log('initiatiating payInto')
             splitter_i = instance;
             txHash =  splitter_i.payInto({from:sender,value:amount});
-            console.log("is this txHash", txHash);
+            console.log('txHash is:', txHash)
             return txHash;
         }).then(function(txHash){
-            console.log('txHash', txHash);
+            console.log('in promise with txHash', txHash);
+            console.log('getTransactionReceiptPromise is', web3.eth.getTransactionReceiptPromise);
+            console.log('this is where to tease out tx started & tx receipt');
             self.setStatus("Transaction complete!");
             self.refreshBalance();
         }).catch(function(e){
