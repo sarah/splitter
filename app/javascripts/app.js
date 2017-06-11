@@ -76,26 +76,11 @@ window.App = {
         });
     },
 
-    //checkForReceipt: function(txHash){
-        //console.log('in checkForReceipt with', txHash);
-        //web3.eth.getTransactionReceiptPromise(txHash)
-            //.then(function(receipt){
-                //console.log('receipt', receipt);
-                //if(receipt !== null){
-                    //console.log('returning', receipt);
-                    //return receipt;
-                //} else {
-                    //console.log('waiting to try again');
-                    //Promise.delay(500).then(checkForReceipt(txHash))
-                //}
-            //});
-    //}
-
     sendSplittable: function(){
         console.log("in sendSplittable")
 
         var self = this;
-        var txHash;
+        var txHash, txObj;
         var amount = parseInt(document.getElementById("amount").value);
         var sender = document.getElementById("sender_addr").value;
         var splitterAddress = document.getElementById("splitter_addr").value;
@@ -106,28 +91,32 @@ window.App = {
         Splitter.deployed().then(function(instance){
             console.log('initiatiating payInto')
             splitter_i = instance;
-            txHash =  splitter_i.payInto({from:sender,value:amount});
-            return txHash;
-        }).then(function(txHash){
+            txObj =  splitter_i.payInto({from:sender,value:amount});
+            return txObj;
+        }).then(function(txObj){
             self.setStatus("Transaction initiated...");
+            console.log('in promise with txObj', txObj);
+            txHash = txObj.tx;
             console.log('in promise with txHash', txHash);
-            const checkForReceipt = function(txHash){
+            const checkForReceipt = function(){
                 console.log('in inline checkForReceipt with', txHash);
                 web3.eth.getTransactionReceiptPromise(txHash)
                     .then(function(receipt){
                         console.log('receipt', receipt);
                         if(receipt !== null){
                             console.log('returning', receipt);
-                            receipt;
+                            return receipt;
                         } else {
                             console.log('waiting to try again');
                             Promise.delay(500).then(checkForReceipt(txHash))
                         }
-            });
+                    }).catch(function(e){
+                        console.log("error with getTransactionReceiptPromise",e);
+                    });
             };
-           return checkForReceipt(txHash);
+            return checkForReceipt(txHash);
         }).then(function(receipt){
-            console.log('we have a receipt, my lord');
+            console.log('we have a receipt, my lord', receipt);
             self.setStatus("Transaction complete...");
             self.refreshBalance();
         }).catch(function(err){
