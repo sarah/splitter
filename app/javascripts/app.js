@@ -94,35 +94,43 @@ window.App = {
             txHash =  splitter_i.payInto.sendTransaction({from:sender,value:amount});
             return txHash;
         }).then(function(txHash){
+            console.log("output",txHash);
             self.setStatus("Transaction initiated...");
-            //console.log('in promise with txObj', txObj);
-            //txHash = txObj.tx;
-            console.log('in promise with txHash', txHash);
-            const checkForReceipt = function(){
-                console.log('in inline checkForReceipt with', txHash);
-                web3.eth.getTransactionReceiptPromise(txHash)
-                    .then(function(receipt){
-                        console.log('receipt', receipt);
-                        if(receipt !== null){
-                            console.log('returning', receipt);
-                            return receipt;
-                        } else {
-                            console.log('waiting to try again');
-                            Promise.delay(500).then(checkForReceipt(txHash))
-                        }
-                    }).then(function(receipt){
-                        console.log('we have a receipt, my lordess', receipt);
-                        self.setStatus("Transaction complete...");
-                        self.refreshBalance();
-                    }).catch(function(e){
-                        console.log("error with getTransactionReceiptPromise",e);
-                    });
-            };
-            return checkForReceipt(txHash);
+                        // Now we wait for the tx to be mined.
+                const tryAgain = () => web3.eth.getTransactionReceiptPromise(txHash)
+                .then(receipt => receipt !== null ?
+                receipt :
+                // Let's hope we don't hit the max call stack depth
+                Promise.delay(500).then(tryAgain));
+                return tryAgain();
+
+
+
+            //self.setStatus("Transaction initiated...");
+            ////console.log('in promise with txObj', txObj);
+            ////txHash = txObj.tx;
+            //console.log('in promise with txHash', txHash);
+            //const checkForReceipt = function(){
+                //console.log('in inline checkForReceipt with', txHash);
+                //web3.eth.getTransactionReceiptPromise(txHash)
+                    //.then(function(receipt){
+                        //console.log('receipt', receipt);
+                        //if(receipt !== null){
+                            //console.log('returning', receipt);
+                            //return receipt;
+                        //} else {
+                            //console.log('waiting to try again');
+                            //Promise.delay(500).then(checkForReceipt(txHash))
+                        //}
+                    //}).catch(function(e){
+                        //console.log("error with getTransactionReceiptPromise",e);
+                    //});
+            //};
+            //return checkForReceipt(txHash);
         }).then(function(receipt){
-            //console.log('we have a receipt, my lord', receipt);
-            //self.setStatus("Transaction complete...");
-            //self.refreshBalance();
+            console.log('we have a receipt, my lord', receipt);
+            self.setStatus("Transaction complete...");
+            self.refreshBalance();
         }).catch(function(err){
             console.log("Oh no!", err);
             self.setStatus("error sending splittable");
