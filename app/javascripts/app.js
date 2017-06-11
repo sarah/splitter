@@ -1,28 +1,37 @@
-// Import the page's CSS. Webpack will know what to do with it.
+
+// Styles
 import "../stylesheets/app.css";
 
-// Import libraries we need.
+// Packages
 import { default as Web3} from 'web3';
-import { default as contract } from 'truffle-contract'
+import { default as truffleContract } from 'truffle-contract'
+import { default as Promise } from 'bluebird'
 
-// Import our contract artifacts and turn them into usable abstractions.
-import splitter_artifacts from '../../build/contracts/Splitter.json'
+// Splitter
+import splitterJSON from '../../build/contracts/Splitter.json'
+const Splitter = truffleContract(splitterJSON);
 
-// MetaCoin is our usable abstraction, which we'll use through the code below.
-var Splitter = contract(splitter_artifacts);
-
-// The following code is simple to show off interacting with your contracts.
-// As your needs grow you will likely need to change its form and structure.
-// For application bootstrapping, check out window.addEventListener below.
+// Vars
 var accounts, account, splitter;
 var a,b,c;
 // s = 0xefd272f787e5fe34cb11d6eb3e3c78a58377661d
-//a = 0x594f46cb925ebd73a364335f53ddb6ede750474a
+// a = 0x594f46cb925ebd73a364335f53ddb6ede750474a
+
+// Checking if Web3 has been injected by the browser (Mist/MetaMask)
+// Otherwise using localhost
+if (typeof web3 !== 'undefined') {
+    window.web3 = new Web3(web3.currentProvider); // Use Mist/MetaMask's provider
+} else {
+    window.web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+}
+
+Promise.promisifyAll(web3.eth, { suffix: "Promise" });
 
 window.App = {
     start: function() {
         var self = this;
 
+        console.log("web3 in start", web3);
         // Bootstrap the MetaCoin abstraction for Use.
         Splitter.setProvider(web3.currentProvider);
 
@@ -50,7 +59,41 @@ window.App = {
         status.innerHTML = message;
     },
 
-    refreshBalance: function() {
+    refreshBalance: function(){
+        console.log('Refreshing balance...');
+        var self = this;
+        var splitter_i;
+        Splitter.deployed().then(function(instance){
+            splitter_i = instance;
+            return web3.eth.getBalancePromise(splitter_i.address)
+                .then(function(balance){
+                    console.log('balance', balance)
+                    document.getElementById("splitter_balance").innerHTML = balance.toString(10);
+                })
+                .catch(function(err){
+                    console.log('error', err);
+                })
+        });
+    },
+    refreshBalanceCallback: function(){
+        console.log('Refreshing balance...');
+        var self = this;
+        var splitter_i;
+        Splitter.deployed().then(function(instance){
+            splitter_i = instance;
+            web3.eth.getBalance(splitter_i.address,function(err,res){
+                if(err){
+                    console.log("error", err);
+                    return;
+                }
+                console.log(res);
+                // could pass to a 'display balance' function here
+                document.getElementById("splitter_balance").innerHTML = res.toString(10);
+            })
+        })
+    },
+
+    refreshBalanceOld: function() {
         console.log('in refreshBalance');
         var self = this;
         var splitter_i;
@@ -94,16 +137,5 @@ window.App = {
 };
 
 window.addEventListener('load', function() {
-    // Checking if Web3 has been injected by the browser (Mist/MetaMask)
-    if (typeof web3 !== 'undefined') {
-        console.warn("Using web3 detected from external source. If you find that your accounts don't appear or you have 0 MetaCoin, ensure you've configured that source properly. If using MetaMask, see the following link. Feel free to delete this warning. :) http://truffleframework.com/tutorials/truffle-and-metamask")
-        // Use Mist/MetaMask's provider
-        window.web3 = new Web3(web3.currentProvider);
-    } else {
-        console.warn("No web3 detected. Falling back to http://localhost:8545. You should remove this fallback when you deploy live, as it's inherently insecure. Consider switching to Metamask for development. More info here: http://truffleframework.com/tutorials/truffle-and-metamask");
-        // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
-        window.web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
-    }
-
     App.start();
 });
