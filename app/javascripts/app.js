@@ -91,12 +91,12 @@ window.App = {
         Splitter.deployed().then(function(instance){
             console.log('initiatiating payInto')
             splitter_i = instance;
-            txObj =  splitter_i.payInto({from:sender,value:amount});
-            return txObj;
-        }).then(function(txObj){
+            txHash =  splitter_i.payInto.sendTransaction({from:sender,value:amount});
+            return txHash;
+        }).then(function(txHash){
             self.setStatus("Transaction initiated...");
-            console.log('in promise with txObj', txObj);
-            txHash = txObj.tx;
+            //console.log('in promise with txObj', txObj);
+            //txHash = txObj.tx;
             console.log('in promise with txHash', txHash);
             const checkForReceipt = function(){
                 console.log('in inline checkForReceipt with', txHash);
@@ -110,15 +110,19 @@ window.App = {
                             console.log('waiting to try again');
                             Promise.delay(500).then(checkForReceipt(txHash))
                         }
+                    }).then(function(receipt){
+                        console.log('we have a receipt, my lordess', receipt);
+                        self.setStatus("Transaction complete...");
+                        self.refreshBalance();
                     }).catch(function(e){
                         console.log("error with getTransactionReceiptPromise",e);
                     });
             };
             return checkForReceipt(txHash);
         }).then(function(receipt){
-            console.log('we have a receipt, my lord', receipt);
-            self.setStatus("Transaction complete...");
-            self.refreshBalance();
+            //console.log('we have a receipt, my lord', receipt);
+            //self.setStatus("Transaction complete...");
+            //self.refreshBalance();
         }).catch(function(err){
             console.log("Oh no!", err);
             self.setStatus("error sending splittable");
