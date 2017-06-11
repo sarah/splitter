@@ -76,6 +76,20 @@ window.App = {
         });
     },
 
+    checkForReceipt: function(txHash){
+        console.log('in checkForReceipt with', txHash);
+        web3.eth.getTransactionReceiptPromise(txHash)
+            .then(function(receipt){
+                console.log('receipt', receipt);
+                if(receipt !== null){
+                    console.log('returning', receipt);
+                    return receipt;
+                } else {
+                    console.log('waiting to try again');
+                    Promise.delay(500).then(checkForReceipt(txHash))
+                }
+            });
+    },
 
     sendSplittable: function(){
         console.log("in sendSplittable")
@@ -93,16 +107,17 @@ window.App = {
             console.log('initiatiating payInto')
             splitter_i = instance;
             txHash =  splitter_i.payInto({from:sender,value:amount});
-            console.log('txHash is:', txHash)
             return txHash;
         }).then(function(txHash){
+            self.setStatus("Transaction initiated...");
             console.log('in promise with txHash', txHash);
-            console.log('getTransactionReceiptPromise is', web3.eth.getTransactionReceiptPromise);
-            console.log('this is where to tease out tx started & tx receipt');
-            self.setStatus("Transaction complete!");
+            return App.checkForReceipt(txHash);
+        }).then(function(receipt){
+            console.log('we have a receipt, my lord');
+            self.setStatus("Transaction complete...");
             self.refreshBalance();
-        }).catch(function(e){
-            console.log("Oh no!", e);
+        }).catch(function(err){
+            console.log("Oh no!", err);
             self.setStatus("error sending splittable");
         })
     },
