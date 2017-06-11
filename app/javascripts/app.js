@@ -75,39 +75,7 @@ window.App = {
                 })
         });
     },
-    refreshBalanceCallback: function(){
-        console.log('Refreshing balance...');
-        var self = this;
-        var splitter_i;
-        Splitter.deployed().then(function(instance){
-            splitter_i = instance;
-            web3.eth.getBalance(splitter_i.address,function(err,res){
-                if(err){
-                    console.log("error", err);
-                    return;
-                }
-                console.log(res);
-                // could pass to a 'display balance' function here
-                document.getElementById("splitter_balance").innerHTML = res.toString(10);
-            })
-        })
-    },
 
-    refreshBalanceOld: function() {
-        console.log('in refreshBalance');
-        var self = this;
-        var splitter_i;
-        var balance;
-        Splitter.deployed().then(function(instance) {
-            splitter_i = instance;
-            balance = splitter_i.getBalance.call();
-            return balance;
-        }).then(function(balances) {
-            document.getElementById("splitter_balance").innerHTML = balances.toString(10);
-        }).catch(function(e) {
-            self.setStatus("Error getting balance; see log.", e);
-        });
-    },
 
     sendSplittable: function(){
         console.log("in sendSplittable")
