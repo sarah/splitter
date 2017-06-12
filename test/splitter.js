@@ -4,6 +4,11 @@ var Splitter = artifacts.require("./Splitter.sol");
 
 contract("Splitter", accounts => {
     console.log('accounts', accounts);
+    let acc0 = accounts[0];
+    let acc1 = accounts[1];
+    let acc2 = accounts[2];
+    console.log('acc0', acc0, 'acc1', acc1, 'acc2', acc2);
+
 });
 //contract("Splitter", function(accounts){
     //describe("testing splitting", function(){
