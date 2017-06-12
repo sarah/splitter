@@ -18,9 +18,6 @@ var receipt_log;
 var tx_log1;
 var tx_log2;
 
-// cb 0x8c8dc204e78be6a3348affd2311db5bc75d47d27
-// 0x85df4ce923dee2661749617136e6172e50614e47
-//
 // Checking if Web3 has been injected by the browser (Mist/MetaMask)
 // Otherwise using localhost
 if (typeof web3 !== 'undefined') {
@@ -93,7 +90,6 @@ window.App = {
             splitterInstance = instance
             console.log('initiatiating payInto')
             txHashPromise = splitterInstance.payInto.sendTransaction({from:sender,value:amount});
-            //txHashPromise = splitterInstance.payInto({from:sender,value:amount});
             return txHashPromise;
         }).then(function(txHash){
             console.log("output",txHash);
