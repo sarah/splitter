@@ -96,13 +96,30 @@ window.App = {
         }).then(function(txHash){
             console.log("output",txHash);
             self.setStatus("Transaction initiated...");
-                        // Now we wait for the tx to be mined.
-                const tryAgain = () => web3.eth.getTransactionReceiptPromise(txHash)
-                .then(receipt => receipt !== null ?
-                receipt :
-                // Let's hope we don't hit the max call stack depth
-                Promise.delay(500).then(tryAgain));
+
+                //const tryAgain = () => web3.eth.getTransactionReceiptPromise(txHash)
+                //.then(
+                    //receipt => receipt !== null ?  receipt :
+                //Promise.delay(500).then(tryAgain));
+
+            //const tryAgain2 = function(){
+                //return web3.eth.getTransactionReceiptPromise(txHash)
+                    //.then(function(receipt){
+                        //if(receipt !== null){
+                            //return receipt;
+                        //} else {
+                            //Promise.delay(500).then(tryAgain2);
+                        //}
+                    //})
+            //}
+
+            const tryAgain = function tryAgain() {
+                    return web3.eth.getTransactionReceiptPromise(txHash).then(function (receipt) {
+                                return receipt !== null ? receipt : Promise.delay(500).then(tryAgain);
+                            });
+            };
                 return tryAgain();
+            //tryAgain2();
 
 
 
