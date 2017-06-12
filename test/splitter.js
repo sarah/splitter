@@ -19,26 +19,21 @@ contract("Splitter", accounts => {
         return Splitter.deployed()
             .then(function(instance){
                 splitter_instance = instance;
-                console.log('in first return');
                 return getBalance(acc0);
             })
             .then(function(_balance){
                 acc0_starting_balance = _balance;
-                console.log('acc0_starting_balance', acc0_starting_balance);
                 return getBalance(acc1);
             })
             .then(function(_balance){
                 acc1_starting_balance = _balance;
-                console.log('acc1_starting_balance', acc1_starting_balance);
                 return getBalance(acc2);
             })
             .then(function(_balance){
                 acc2_starting_balance = _balance;
-                console.log('acc2_starting_balance', acc2_starting_balance);
                 return splitter_instance.payInto({from: acc0, value:amt})
             })
             .then(function(){
-                console.log('is payInto done?');
                 return getBalance(acc1)
             })
             .then(function(_balance){
@@ -47,9 +42,6 @@ contract("Splitter", accounts => {
             })
             .then(function(_balance){
                 acc2_ending_balance = _balance;
-                console.log('acc1_starting_balance', acc1_starting_balance.toString(10), 'acc1_ending_balance', acc1_ending_balance.toString(10));
-                console.log('acc2_starting_balance', acc2_starting_balance.toString(10), 'acc2_ending_balance', acc2_ending_balance.toString(10));
-                console.log("half", half);
                 assert.equal(acc1_ending_balance.toString(10), acc1_starting_balance.plus(half).toString(10), "balance should increase by " + half);
                 assert.equal(acc2_ending_balance.toString(10), acc1_starting_balance.plus(half).toString(10), "balance should increase by " + half);
             })
