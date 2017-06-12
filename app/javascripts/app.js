@@ -84,7 +84,8 @@ window.App = {
         var sender = document.getElementById("sender_addr").value;
         console.log('sender', sender, 'account', account);
         var splitterAddress = document.getElementById("splitter_addr").value;
-        let splitterInstance
+        let splitterInstance;
+        var r
 
         this.setStatus("Initiating split transaction...(hang on)");
 
@@ -92,6 +93,7 @@ window.App = {
             splitterInstance = instance
             console.log('initiatiating payInto')
             txHashPromise = splitterInstance.payInto.sendTransaction({from:sender,value:amount});
+            //txHashPromise = splitterInstance.payInto({from:sender,value:amount});
             return txHashPromise;
         }).then(function(txHash){
             console.log("output",txHash);
@@ -103,6 +105,7 @@ window.App = {
             };
             return waitForReceiptPromise();
         }).then(function(receipt){
+            r = receipt;
             console.log("we have a receipt", receipt);
             self.refreshBalance();
         }).catch(function(err){

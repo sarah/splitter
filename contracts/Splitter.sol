@@ -27,10 +27,14 @@ contract Splitter{
             uint etherLeftOver = msg.value - (half * 2);
 
             if(half > 0){
-                if (!recipient1.send(half) && !recipient2.send(half)){
+                if(!recipient1.send(half)){
                     throw;
                 } else {
                     LogTransfer(recipient1, half, 'split');
+                }
+                if (!recipient2.send(half)){
+                    throw;
+                } else {
                     LogTransfer(recipient2, half, 'split');
                 }
             } else {
