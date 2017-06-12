@@ -62,7 +62,7 @@ window.App = {
     refreshBalance: function(){
         console.log('Refreshing balance...');
         var self = this;
-        Splitter.deployed().then(function(instance){
+        return Splitter.deployed().then(function(instance){
             return web3.eth.getBalancePromise(instance.address)
                 .then(function(balance){
                     console.log('balance', balance)
@@ -86,7 +86,7 @@ window.App = {
 
         this.setStatus("Initiating split transaction...(hang on)");
 
-        Splitter.deployed().then(function(instance){
+        return Splitter.deployed().then(function(instance){
             splitterInstance = instance
             console.log('initiatiating payInto')
             txHashPromise = splitterInstance.payInto.sendTransaction({from:sender,value:amount});
