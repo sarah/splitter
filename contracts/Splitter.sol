@@ -1,60 +1,60 @@
 pragma solidity ^0.4.5;
 
 contract Splitter{
-    address private alice = address(0x594f46cb925ebd73a364335f53ddb6ede750474a);
-    address private bob = address(0x9421e7733ce28c3a31bfc9c60aba030edf8d7c6f);
-    address private carol = address(0x86ed0b13d365020854f1a8f101cc002d00076726);
+    address public recipient1;
+    address public recipient2;
+    address public funder;
 
-    event EthIncoming(
-        address indexed _sender,
-        uint _value
-    );
-
-    event Transfer(
+    event LogTransfer(
         address indexed _recipient,
-        uint value
+        uint _value,
+        string _transfer_type
     );
 
-    event NotSplitting(
-        address indexed _sender,
-        uint value
-    );
-
-    event Splitting(
-        address indexed _sender,
-        uint value
-    );
-
-    function Splitter() payable{}
+    function Splitter(address owner, address r1, address r2) payable{
+        funder = owner;
+        recipient1 = r1;
+        recipient2 = r2;
+    }
 
     function getBalance() returns (uint){
         return address(this).balance;
     }
 
-    function payInto() payable {
-        EthIncoming(msg.sender, msg.value);
-        if (msg.sender == alice){
-            Splitting(msg.sender,msg.value);
+    function payInto() payable returns (bool) {
+        if (msg.sender == funder){
+            uint half = msg.value / 2;
+            uint etherLeftOver = msg.value - (half * 2);
 
-            var half = msg.value / 2;
-
-            // send to bob
-            if (!bob.send(half)){
-                throw;
+            if(half > 0){
+                if (!recipient1.send(half) && !recipient2.send(half)){
+                    throw;
+                } else {
+                    LogTransfer(recipient1, half, 'split');
+                    LogTransfer(recipient2, half, 'split');
+                }
             } else {
-                Transfer(bob, half);
+                return false;
             }
 
-            // send to carol
-            if (!carol.send(half)){
-                throw;
-            } else {
-                Transfer(carol, half);
+            // return change
+            if (etherLeftOver > 0){
+                if (!funder.send(etherLeftOver)){
+                    throw;
+                } else {
+                    LogTransfer(funder, etherLeftOver, 'return_change');
+                }
             }
-
         } else {
-            // will remove when not in dev
-            NotSplitting(msg.sender, msg.value);
+            // if alice is not the sender
+            // Let's return $ to sender b/c we're kind,
+            // even though it costs gas
+            if (!msg.sender.send(msg.value)){
+                throw;
+            } else {
+                LogTransfer(msg.sender,msg.value, 'return_to_sender');
+            }
         }
+        return true;
     }
 }

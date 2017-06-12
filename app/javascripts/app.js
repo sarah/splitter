@@ -14,9 +14,13 @@ const Splitter = truffleContract(splitterJSON);
 // Vars
 var accounts, account, splitter;
 var a,b,c;
-// s = 0xefd272f787e5fe34cb11d6eb3e3c78a58377661d
-// a = 0x594f46cb925ebd73a364335f53ddb6ede750474a
+var receipt_log;
+var tx_log1;
+var tx_log2;
 
+// cb 0x8c8dc204e78be6a3348affd2311db5bc75d47d27
+// 0x85df4ce923dee2661749617136e6172e50614e47
+//
 // Checking if Web3 has been injected by the browser (Mist/MetaMask)
 // Otherwise using localhost
 if (typeof web3 !== 'undefined') {
@@ -31,8 +35,7 @@ window.App = {
     start: function() {
         var self = this;
 
-        console.log("web3 in start", web3);
-        // Bootstrap the MetaCoin abstraction for Use.
+        // Bootstrap the Splitter abstraction for Use.
         Splitter.setProvider(web3.currentProvider);
 
         // Get the initial account balance so it can be displayed.
@@ -62,10 +65,8 @@ window.App = {
     refreshBalance: function(){
         console.log('Refreshing balance...');
         var self = this;
-        var splitter_i;
         Splitter.deployed().then(function(instance){
-            splitter_i = instance;
-            return web3.eth.getBalancePromise(splitter_i.address)
+            return web3.eth.getBalancePromise(instance.address)
                 .then(function(balance){
                     console.log('balance', balance)
                     document.getElementById("splitter_balance").innerHTML = balance.toString(10);
@@ -77,34 +78,32 @@ window.App = {
     },
 
     sendSplittable: function(){
-        console.log("in sendSplittable")
-
         var self = this;
-        var txHash, txObj;
+        var txHashPromise;
         var amount = parseInt(document.getElementById("amount").value);
         var sender = document.getElementById("sender_addr").value;
+        console.log('sender', sender, 'account', account);
         var splitterAddress = document.getElementById("splitter_addr").value;
-        var splitter_i;
+        let splitterInstance
 
         this.setStatus("Initiating split transaction...(hang on)");
 
         Splitter.deployed().then(function(instance){
+            splitterInstance = instance
             console.log('initiatiating payInto')
-            splitter_i = instance;
-            txHash =  splitter_i.payInto.sendTransaction({from:sender,value:amount});
-            return txHash;
+            txHashPromise = splitterInstance.payInto.sendTransaction({from:sender,value:amount});
+            return txHashPromise;
         }).then(function(txHash){
             console.log("output",txHash);
             self.setStatus("Transaction initiated...");
-            const waitForReceipt = function tryAgain() {
+            const waitForReceiptPromise = function tryAgain() {
                 return web3.eth.getTransactionReceiptPromise(txHash).then(function (receipt) {
                     return receipt !== null ? receipt : Promise.delay(500).then(tryAgain);
                 });
             };
-            return waitForReceipt();
+            return waitForReceiptPromise();
         }).then(function(receipt){
-            console.log('we have a receipt', receipt);
-            self.setStatus("Transaction complete...");
+            console.log("we have a receipt", receipt);
             self.refreshBalance();
         }).catch(function(err){
             console.log("Oh no!", err);
