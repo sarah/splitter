@@ -8,7 +8,8 @@ contract("Splitter", accounts => {
     let acc0 = accounts[0];
     let acc1 = accounts[1];
     let acc2 = accounts[2];
-    let amt = 10;
+    let amt = 1000;
+    let half = amt/2;
     var acc0_starting_balance, acc1_starting_balance, acc2_starting_balance;
     var acc0_ending_balance, acc1_ending_balance, acc2_ending_balance;
     var splitter_instance;
@@ -34,7 +35,7 @@ contract("Splitter", accounts => {
             .then(function(_balance){
                 acc2_starting_balance = _balance;
                 console.log('acc2_starting_balance', acc2_starting_balance);
-                return splitter_instance.payInto({from: acc0, value:web3.toWei(amt,"ether")})
+                return splitter_instance.payInto({from: acc0, value:amt})
             })
             .then(function(){
                 console.log('is payInto done?');
@@ -46,9 +47,11 @@ contract("Splitter", accounts => {
             })
             .then(function(_balance){
                 acc2_ending_balance = _balance;
-                console.log('acc1_ending_balance', acc1_ending_balance);
-                console.log('acc2_ending_balance', acc2_ending_balance);
-                assert.equal(acc1_starting_balance.toString(10), acc1_ending_balance.plus(amt).toString(10), "balance should increase by " + amt/2);
+                console.log('acc1_starting_balance', acc1_starting_balance.toString(10), 'acc1_ending_balance', acc1_ending_balance.toString(10));
+                console.log('acc2_starting_balance', acc2_starting_balance.toString(10), 'acc2_ending_balance', acc2_ending_balance.toString(10));
+                console.log("half", half);
+                assert.equal(acc1_ending_balance.toString(10), acc1_starting_balance.plus(half).toString(10), "balance should increase by " + half);
+                assert.equal(acc2_ending_balance.toString(10), acc1_starting_balance.plus(half).toString(10), "balance should increase by " + half);
                 //assert.equal(b_ending_balance,b_starting_balance+5,"B's balance needs to be its existing balance + 5");
             })
     });
