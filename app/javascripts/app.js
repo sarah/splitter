@@ -98,12 +98,12 @@ window.App = {
             self.setStatus("Transaction initiated...");
             const waitForReceipt = function tryAgain() {
                 return web3.eth.getTransactionReceiptPromise(txHash).then(function (receipt) {
-                            return receipt !== null ? receipt : Promise.delay(500).then(tryAgain);
-                        });
+                    return receipt !== null ? receipt : Promise.delay(500).then(tryAgain);
+                });
             };
             return waitForReceipt();
         }).then(function(receipt){
-            console.log('we have a receipt, my lord', receipt);
+            console.log('we have a receipt', receipt);
             self.setStatus("Transaction complete...");
             self.refreshBalance();
         }).catch(function(err){
