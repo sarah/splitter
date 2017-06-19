@@ -38,7 +38,26 @@ contract Splitter{
         string _transfer_type
     );
 
+    event LogDebug(
+        string _thing
+    );
+
+    event LogPayoutAttempt(
+        uint _which,
+        address _addr,
+        uint _amt,
+        string _msg
+    );
+
+    event LogDeposit(
+            string _msg,
+            uint _half,
+            uint _remainder,
+            address _funder
+
+    );
     function Splitter(address owner, address r1, address r2) {
+        LogDebug("deploying");
         funder = owner;
         recipient1 = r1;
         recipient2 = r2;
@@ -48,15 +67,19 @@ contract Splitter{
         return address(this).balance;
     }
 
-    function calculatePayoutAmounts(uint depositAmt) returns(uint, uint){
+    function calculatePayoutAmounts(uint depositAmt) internal returns(uint, uint){
+        LogDebug("calculatePayoutAmounts");
+
         uint half = depositAmt / 2;
         uint remainder = depositAmt - (half * 2);
         return(half, remainder);
     }
 
     function deposit() payable{
+        LogDebug("making deposit");
         if(msg.sender == funder){
             var (half,remainder) = calculatePayoutAmounts(msg.value);
+            LogDeposit("making a deposit", half,remainder, funder);
 
             // only create Payout structs if we've confirmed msg.sender is the funder
             // & only create them for our known recipients
@@ -72,10 +95,12 @@ contract Splitter{
 
     function executePayouts(){
         uint extraRemainder = 0;
+        LogDebug("Starting Payouts");
 
         // Payouts have already been created
         for (uint i = 0; i < payouts.length; i++) {
             Payout p = payouts[i];
+            LogPayoutAttempt(i,p.addr,p.amount,"normal");
 
             // Attempt send if not previously paid / attempted
             if(!p.paid && !p.errored){
@@ -93,8 +118,10 @@ contract Splitter{
                 } else {
 
                     // Send funds to owner if there are any
+                    LogPayoutAttempt(i,p.addr,p.amount,"to funder first");
                     if(extraRemainder > 0 || p.amount > 0){
                         p.amount += extraRemainder;
+                        LogPayoutAttempt(i,p.addr,p.amount,"to funder");
                         if(!p.addr.send(p.amount)){
                             throw;
                         } else {
