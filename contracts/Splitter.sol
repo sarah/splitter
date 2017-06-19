@@ -1,5 +1,6 @@
 pragma solidity ^0.4.5;
 
+//Consider what will happen if r2's address is a hostile or errant contract that decides to throw every time. Is there any way for r1 to get paid? Is it r1's fault that r2 is misbehaving? This Splitter is a simple example. In a more complex scenario there may be many participants. We don't want a situation where one bad actor can interfere with everyone else because that creates an opportunity for DoS.
 contract Splitter{
     address public recipient1;
     address public recipient2;
