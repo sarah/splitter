@@ -65,11 +65,10 @@ contract("Splitter", function(accounts){
         return Splitter.deployed()
             .then(_instance => {
                 splitter = _instance;
-                //return splitter.depositFunds({from:funder,value:web3.toWei(5,"ether")})
                 return splitter.depositFunds({from:funder,value:5})
             })
-            .then(txObj => {
-                console.log('txHash', txObj);
+            .then(_txObj => {
+                console.log('txHash', _txObj);
                 return Promise.all([
                     splitter.balances(payee1),
                     splitter.balances(payee2),
@@ -83,4 +82,44 @@ contract("Splitter", function(accounts){
                 assert.strictEqual(results[2].toString(10), '1' );
             })
     });
+
+
+    it("should send the balance to the payee, minus gas", function(){
+        return Splitter.deployed()
+            .then(_instance => {
+                splitter = _instance;
+                return splitter.depositFunds({from:funder,value:4})
+            })
+            .then(_txObj => {
+                return splitter.withdrawFunds(payee1);
+            })
+            .then(txObj => {
+                return web3.eth.getBalancePromise(payee1);
+            })
+            .then(balance => {
+                console.log("balance", balance);
+                console.log("balance", balance.toString(10));
+            })
+    });
+
+
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
