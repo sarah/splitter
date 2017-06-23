@@ -13,15 +13,39 @@ contract("Splitter", function(accounts){
     });
 
     //beforeEach("should deploy a new Splitter", function(){
+        //console.log('hello in beforeEach');
         //return Splitter.new()
-            //.then(created => splitter = created);
+            //.then(created => {
+
+                //splitter = created;
+                //console.log('splitter found');
+            //}
+            //);
+    //});
+
+    //it("should use the splitter instance in beforeEach?", function(){
+        //// This test with the beforeEach throws this error
+        //// Error: VM Exception while processing transaction: invalid JUMP at c086c902c2be7fc1c539a454176b35d9b221bead267605d9a4c6b418dc279e2a/a1376e8917b3cb8ddc03187b1a7f7940a1103503:68
+
+        ////console.log('hello', splitter);
+        //return splitter.depositFunds({from:funder,value:web3.toWei(4,"ether")})
+            //.then(txo => {
+                //console.log('hi txo');
+            //}
+        //);
+        //console.log('just deposited funds maybe');
+
+        ////return splitter.depositFunds({from:funder,value:web3.toWei(4,"ether")})
+            ////.then(txObj => {
+                ////console.log('hello!', txObj);
+            ////});
     //});
 
     it("should equally split input between payees in balances", function(){
         return Splitter.deployed()
             .then(_instance => {
                 splitter = _instance;
-                return splitter.depositFunds({from:funder,value:web3.toWei(4,"ether")})
+            return splitter.depositFunds({from:funder,value:web3.toWei(4,"ether")})
             })
             .then(txObj => {
                 console.log('txHash', txObj);
