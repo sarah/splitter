@@ -32,12 +32,6 @@ contract Splitter{
         payee2 = _payee2;
     }
 
-    function calculatePayoutAmounts(uint depositAmt) internal returns(uint, uint){
-        // TODO what about smaller amounts, like 1 ether: split into wei? 
-        uint half = depositAmt / 2;
-        uint remainder = depositAmt - (half * 2);
-        return(half, remainder);
-    }
 
     function depositFunds() payable{
         if(msg.sender == funder){
@@ -72,12 +66,18 @@ contract Splitter{
         }
     }
 
-    function isValidPayee(address payeeCandidate) internal returns (bool){
-        return (payeeCandidate == payee1 || payeeCandidate == payee2 || payeeCandidate == funder) ? true : false;
-    }
-
     function getBalance() returns (uint){
         return address(this).balance;
     }
 
+    function isValidPayee(address payeeCandidate) internal returns (bool){
+        return (payeeCandidate == payee1 || payeeCandidate == payee2 || payeeCandidate == funder) ? true : false;
+    }
+
+    function calculatePayoutAmounts(uint depositAmt) internal returns(uint, uint){
+        // TODO what about smaller amounts, like 1 ether: split into wei? 
+        uint half = depositAmt / 2;
+        uint remainder = depositAmt - (half * 2);
+        return(half, remainder);
+    }
 }
