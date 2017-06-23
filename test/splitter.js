@@ -45,7 +45,7 @@ contract("Splitter", function(accounts){
         return Splitter.deployed()
             .then(_instance => {
                 splitter = _instance;
-            return splitter.depositFunds({from:funder,value:web3.toWei(4,"ether")})
+                return splitter.depositFunds({from:funder,value:web3.toWei(4,"ether")})
             })
             .then(txObj => {
                 console.log('txHash', txObj);
@@ -58,6 +58,29 @@ contract("Splitter", function(accounts){
             .then(results => {
                 assert.strictEqual(results[0].toString(10), web3.toWei(2, "ether"));
                 assert.strictEqual(results[1].toString(10), web3.toWei(2, "ether"));
+            })
+    });
+
+    it("should assign the remainder to the funder", function(){
+        return Splitter.deployed()
+            .then(_instance => {
+                splitter = _instance;
+                //return splitter.depositFunds({from:funder,value:web3.toWei(5,"ether")})
+                return splitter.depositFunds({from:funder,value:5})
+            })
+            .then(txObj => {
+                console.log('txHash', txObj);
+                return Promise.all([
+                    splitter.balances(payee1),
+                    splitter.balances(payee2),
+                    splitter.balances(funder),
+                  ]
+                )
+            })
+            .then(results => {
+                assert.strictEqual(results[0].toString(10), '2');
+                assert.strictEqual(results[1].toString(10), '2' );
+                assert.strictEqual(results[2].toString(10), '1' );
             })
     });
 });
