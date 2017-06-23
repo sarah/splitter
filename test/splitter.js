@@ -1,57 +1,39 @@
-const Web3 = require('web3');
-const Promise = require('bluebird');
-var Splitter = artifacts.require("./Splitter.sol");
-
-Promise.promisifyAll(web3.eth, { suffix: "Promise" });
-
-contract("Splitter", accounts => {
-    let acc0 = accounts[0];
-    let acc1 = accounts[1];
-    let acc2 = accounts[2];
-    let amt = 1000;
-    let half = amt/2;
-    var acc0_starting_balance, acc1_starting_balance, acc2_starting_balance;
-    var acc0_ending_balance, acc1_ending_balance, acc2_ending_balance;
-    var splitter_instance;
+const Promise = require("bluebird");
+const Splitter = artifacts.require("./Splitter.sol");
 
 
-    it('splits between b&c when money in from a', function(){
+contract("Splitter", function(accounts){
+    let splitter, funder, payee1, payee2;
+
+    before("should prepare accounts", function(){
+        funder = accounts[0];
+        payee1 = accounts[1];
+        payee2 = accounts[2];
+        Promise.promisifyAll(web3.eth, {suffix: "Promise"});
+    });
+
+    //beforeEach("should deploy a new Splitter", function(){
+        //return Splitter.new()
+            //.then(created => splitter = created);
+    //});
+
+    it("should equally split input between payees in balances", function(){
         return Splitter.deployed()
-            .then(function(instance){
-                splitter_instance = instance;
-                return getBalance(acc0);
+            .then(_instance => {
+                splitter = _instance;
+                return splitter.depositFunds({from:funder,value:web3.toWei(4,"ether")})
             })
-            .then(function(_balance){
-                acc0_starting_balance = _balance;
-                return getBalance(acc1);
+            .then(txObj => {
+                console.log('txHash', txObj);
+                return Promise.all([
+                    splitter.balances(payee1),
+                    splitter.balances(payee2),
+                  ]
+                )
             })
-            .then(function(_balance){
-                acc1_starting_balance = _balance;
-                return getBalance(acc2);
-            })
-            .then(function(_balance){
-                acc2_starting_balance = _balance;
-                return splitter_instance.payInto({from: acc0, value:amt})
-            })
-            .then(function(){
-                return getBalance(acc1)
-            })
-            .then(function(_balance){
-                acc1_ending_balance = _balance;
-                return getBalance(acc2)
-            })
-            .then(function(_balance){
-                acc2_ending_balance = _balance;
-                assert.equal(acc1_ending_balance.toString(10), acc1_starting_balance.plus(half).toString(10), "balance should increase by " + half);
-                assert.equal(acc2_ending_balance.toString(10), acc1_starting_balance.plus(half).toString(10), "balance should increase by " + half);
+            .then(results => {
+                assert.strictEqual(results[0].toString(10), web3.toWei(2, "ether"));
+                assert.strictEqual(results[1].toString(10), web3.toWei(2, "ether"));
             })
     });
-
 });
-
-
-function getBalance(address) {
-    return web3.eth.getBalancePromise(address).then(balance => {
-        return balance;
-    });
-}

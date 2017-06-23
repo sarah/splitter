@@ -24,7 +24,7 @@ contract Splitter{
         string _transfer_type
     );
 
-    mapping(address => uint) balances;
+    mapping(address => uint) public balances;
 
     function Splitter(address _funder, address _payee1, address _payee2) {
         funder = _funder ;
