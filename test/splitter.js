@@ -20,7 +20,7 @@ contract("Splitter", function(accounts){
         Promise.promisifyAll(web3.eth, {suffix: "Promise"});
     });
 
-    it("should equally split input between payees in balances", function(){
+    it("when sent by funder, should equally split input between payees in balances", function(){
         return Splitter.deployed()
             .then(_instance => {
                 splitter = _instance;
@@ -94,6 +94,52 @@ contract("Splitter", function(accounts){
                 assert.strictEqual(payeeInitialBalance.plus(weiOwedPayee).toString("10"), payeeNewBalance.toString("10"));
             })
     });
+
+    /* Not sure how to test that errors are thrown. 
+     * When I run this code, which throws an error b/c the funds come from payee1
+     * the message I get is: 
+     * Error: VM Exception while processing transaction: invalid JUMP at c086c902c2be7fc1c539a454176b35d9b221bead267605d9a4c6b418dc279e2a/6a4019f21672b08bcaf3439f9026ede432dad399:68
+     * so I've commented it out but it's something I need to learn
+     
+    it("when not initiated by funder, no balances change", function(){
+        let payee1InitialBalance, payee2InitialBalance, funderInitialBalance;
+
+        return Splitter.deployed()
+            .then(_instance => {
+                splitter = _instance;
+                return splitter.depositFunds({from:payee1,value:etherInWei(4)})
+            })
+            .then(_txObj => {
+                return Promise.all([
+                    web3.eth.getBalancePromise(payee1),
+                    web3.eth.getBalancePromise(payee2),
+                    web3.eth.getBalancePromise(funder)
+                ])
+            })
+            .then(_initialBalances => {
+                payee1InitialBalance = _initialBalances[0];
+                payee2InitialBalance = _initialBalances[1];
+                funderInitialBalance = _initialBalances[2];
+
+                return splitter.withdrawFunds(payee2);
+            })
+            .then(_txObj => {
+                return Promise.all([
+                    web3.eth.getBalancePromise(payee1),
+                    web3.eth.getBalancePromise(payee2),
+                    web3.eth.getBalancePromise(funder)
+                ])
+            })
+            .then(_finalBalances => {
+                var payee1NewBalance = _finalBalances[0];
+                var payee2NewBalance = _finalBalances[1];
+                var funderNewBalance = _finalBalances[2];
+                assert.strictEqual(payee1InitialBalance.toString("10"), payee1NewBalance.toString("10"));
+                assert.strictEqual(payee2InitialBalance.toString("10"), payee2NewBalance.toString("10"));
+                assert.strictEqual(funderInitialBalance.toString("10"), funderBalance.toString("10"));
+            })
+    });
+    */
 });
 
 
