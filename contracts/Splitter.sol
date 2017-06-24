@@ -30,6 +30,11 @@ contract Splitter{
         funder = _funder ;
         payee1 = _payee1;
         payee2 = _payee2;
+
+        // initialize balances to 0 so they can always be checked
+        balances[funder] = 0;
+        balances[payee1] = 0;
+        balances[payee2] = 0;
     }
 
     function depositFunds() payable{

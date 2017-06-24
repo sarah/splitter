@@ -21,7 +21,7 @@ var tx_log2;
 // Checking if Web3 has been injected by the browser (Mist/MetaMask)
 // Otherwise using localhost
 // funder: 0x8c8dc204e78be6a3348affd2311db5bc75d47d27
-// splitter:0xffbdbf783cef70b8bd6e449dc0cebcc079504a96
+// splitter:0x6683d74b3a8f8710a70e993d5eebeec353bdeffa
 if (typeof web3 !== 'undefined') {
     window.web3 = new Web3(web3.currentProvider); // Use Mist/MetaMask's provider
 } else {
@@ -71,13 +71,13 @@ window.App = {
                 return Promise.all(
                     [
                         web3.eth.getBalancePromise(splitter.address),
-                        //splitter.balances("0x8c8dc204e78be6a3348affd2311db5bc75d47d27"),
+                        splitter.balances("0x8c8dc204e78be6a3348affd2311db5bc75d47d27"),
                     ]
                 )
             })
             .then(results => {
                 console.log("balance results", results);
-                document.getElementById("splitter_balance").innerHTML = results[0].toString(10);
+                document.getElementById("splitter_balance").innerHTML = web3.fromWei(results[0].toString(10));
             })
             .catch(err =>{
                 console.log('error', err);
@@ -108,7 +108,19 @@ window.App = {
     depositFunds: function(){
         var amount = parseInt(document.getElementById("amount").value);
         var sender = document.getElementById("sender_addr").value;
-        console.log('Depositing funds! From', sender, 'amount', amount);
+        this.setStatus("Initiating Deposit... hang on");
+
+        return Splitter.deployed().then(i => {
+                splitter = i;
+                console.log('Depositing funds! From', sender, 'amount', amount, "to splitter", splitter);
+                return splitter.depositFunds({from:sender, value:web3.toWei(amount,"ether")})
+            })
+            .then(txo => {
+                console.log('txo', txo);
+            })
+            .catch(err => {
+                console.log("error!", err);
+            });
     },
 
     //sendSplittable: function(){
