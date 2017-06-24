@@ -43,7 +43,7 @@ contract("Splitter", function(accounts){
         return Splitter.deployed()
             .then(_instance => {
                 splitter = _instance;
-                return splitter.depositFunds({from:funder,value:9})
+                return splitter.depositFunds({from:funder,value:9}) // just 9 wei
             })
             .then(_txObj => {
                 return Promise.all([
