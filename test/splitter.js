@@ -48,7 +48,7 @@ contract("Splitter", function(accounts){
                 return splitter.depositFunds({from:funder,value:web3.toWei(4,"ether")})
             })
             .then(txObj => {
-                console.log('txHash', txObj);
+                //console.log('txHash', txObj);
                 return Promise.all([
                     splitter.balances(payee1),
                     splitter.balances(payee2),
@@ -68,7 +68,7 @@ contract("Splitter", function(accounts){
                 return splitter.depositFunds({from:funder,value:5})
             })
             .then(_txObj => {
-                console.log('txHash', _txObj);
+                //console.log('txHash', _txObj);
                 return Promise.all([
                     splitter.balances(payee1),
                     splitter.balances(payee2),
@@ -88,17 +88,36 @@ contract("Splitter", function(accounts){
         return Splitter.deployed()
             .then(_instance => {
                 splitter = _instance;
-                return splitter.depositFunds({from:funder,value:4})
+                return splitter.depositFunds({from:funder,value:web3.toWei(4,"ether")})
             })
             .then(_txObj => {
+                return Promise.all([
+                    splitter.balances(payee1),
+                    web3.eth.getBalancePromise(payee1)
+                ])
+            })
+            .then(_initialBalances => {
+                //console.log('_initialBalances ', _initialBalances);
+                var weiOwed = _initialBalances[0];
+                var weiCurrent = _initialBalances[1];
+                console.log("owed after withdrawing", weiOwed);
+                console.log("current after withdrawing", weiCurrent);
+
                 return splitter.withdrawFunds(payee1);
             })
-            .then(txObj => {
-                return web3.eth.getBalancePromise(payee1);
+            .then(_txObj => {
+                //console.log('_txObj', _txObj);
+                return Promise.all([
+                    splitter.balances(payee1),
+                    web3.eth.getBalancePromise(payee1)
+                ])
             })
-            .then(balance => {
-                console.log("balance", balance);
-                console.log("balance", balance.toString(10));
+            .then(_finalBalances => {
+                //console.log("balance", _finalBalances);
+                var weiOwed = _finalBalances[0];
+                var weiCurrent = _finalBalances[1];
+                console.log("owed after withdrawing", weiOwed);
+                console.log("current after withdrawing", weiCurrent);
             })
     });
 
