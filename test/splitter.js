@@ -2,6 +2,10 @@ const Promise = require("bluebird");
 const Splitter = artifacts.require("./Splitter.sol");
 
 
+function etherInWei(int){
+    return web3.toWei(int, "ether");
+}
+
 contract("Splitter", function(accounts){
     let splitter, funder, payee1, payee2;
 
@@ -12,43 +16,13 @@ contract("Splitter", function(accounts){
         Promise.promisifyAll(web3.eth, {suffix: "Promise"});
     });
 
-    //beforeEach("should deploy a new Splitter", function(){
-        //console.log('hello in beforeEach');
-        //return Splitter.new()
-            //.then(created => {
-
-                //splitter = created;
-                //console.log('splitter found');
-            //}
-            //);
-    //});
-
-    //it("should use the splitter instance in beforeEach?", function(){
-        //// This test with the beforeEach throws this error
-        //// Error: VM Exception while processing transaction: invalid JUMP at c086c902c2be7fc1c539a454176b35d9b221bead267605d9a4c6b418dc279e2a/a1376e8917b3cb8ddc03187b1a7f7940a1103503:68
-
-        ////console.log('hello', splitter);
-        //return splitter.depositFunds({from:funder,value:web3.toWei(4,"ether")})
-            //.then(txo => {
-                //console.log('hi txo');
-            //}
-        //);
-        //console.log('just deposited funds maybe');
-
-        ////return splitter.depositFunds({from:funder,value:web3.toWei(4,"ether")})
-            ////.then(txObj => {
-                ////console.log('hello!', txObj);
-            ////});
-    //});
-
     it("should equally split input between payees in balances", function(){
         return Splitter.deployed()
             .then(_instance => {
                 splitter = _instance;
-                return splitter.depositFunds({from:funder,value:web3.toWei(4,"ether")})
+                return splitter.depositFunds({from:funder,value:etherInWei(4)})
             })
             .then(txObj => {
-                //console.log('txHash', txObj);
                 return Promise.all([
                     splitter.balances(payee1),
                     splitter.balances(payee2),
@@ -56,8 +30,8 @@ contract("Splitter", function(accounts){
                 )
             })
             .then(results => {
-                assert.strictEqual(results[0].toString(10), web3.toWei(2, "ether"));
-                assert.strictEqual(results[1].toString(10), web3.toWei(2, "ether"));
+                assert.strictEqual(results[0].toString(10), etherInWei(2));
+                assert.strictEqual(results[1].toString(10), etherInWei(2));
             })
     });
 
@@ -65,10 +39,9 @@ contract("Splitter", function(accounts){
         return Splitter.deployed()
             .then(_instance => {
                 splitter = _instance;
-                return splitter.depositFunds({from:funder,value:5})
+                return splitter.depositFunds({from:funder,value:9})
             })
             .then(_txObj => {
-                //console.log('txHash', _txObj);
                 return Promise.all([
                     splitter.balances(payee1),
                     splitter.balances(payee2),
@@ -77,9 +50,10 @@ contract("Splitter", function(accounts){
                 )
             })
             .then(results => {
-                assert.strictEqual(results[0].toString(10), '2');
-                assert.strictEqual(results[1].toString(10), '2' );
-                assert.strictEqual(results[2].toString(10), '1' );
+                console.log('results', results);
+                assert.strictEqual(results[0].toString(10), "4");
+                assert.strictEqual(results[1].toString(10), "4");
+                assert.strictEqual(results[2].toString(10), "1");
             })
     });
 
@@ -88,7 +62,7 @@ contract("Splitter", function(accounts){
         return Splitter.deployed()
             .then(_instance => {
                 splitter = _instance;
-                return splitter.depositFunds({from:funder,value:web3.toWei(4,"ether")})
+                return splitter.depositFunds({from:funder,value:etherInWei(4)})
             })
             .then(_txObj => {
                 return Promise.all([
@@ -97,9 +71,10 @@ contract("Splitter", function(accounts){
                 ])
             })
             .then(_initialBalances => {
-                //console.log('_initialBalances ', _initialBalances);
+                console.log('_initialBalances ', _initialBalances);
                 var weiOwed = _initialBalances[0];
                 var weiCurrent = _initialBalances[1];
+                var weiCurrentToWei = web3.toWei(_initialBalances[1]);
                 console.log("owed after withdrawing", weiOwed);
                 console.log("current after withdrawing", weiCurrent);
 
@@ -113,7 +88,7 @@ contract("Splitter", function(accounts){
                 ])
             })
             .then(_finalBalances => {
-                //console.log("balance", _finalBalances);
+                console.log("balance", _finalBalances);
                 var weiOwed = _finalBalances[0];
                 var weiCurrent = _finalBalances[1];
                 console.log("owed after withdrawing", weiOwed);
