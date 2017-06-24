@@ -2,8 +2,12 @@ const Promise = require("bluebird");
 const Splitter = artifacts.require("./Splitter.sol");
 
 
-function etherInWei(int){
-    return web3.toWei(int, "ether");
+function etherInWei(etherInt){
+    return web3.toWei(etherInt, "ether");
+}
+
+function weiInEther(weiInt){
+    return web3.fromWei(weiInt);
 }
 
 contract("Splitter", function(accounts){
@@ -50,7 +54,6 @@ contract("Splitter", function(accounts){
                 )
             })
             .then(results => {
-                console.log('results', results);
                 assert.strictEqual(results[0].toString(10), "4");
                 assert.strictEqual(results[1].toString(10), "4");
                 assert.strictEqual(results[2].toString(10), "1");
@@ -58,7 +61,9 @@ contract("Splitter", function(accounts){
     });
 
 
-    it("should send the balance to the payee, minus gas", function(){
+    it("should send the balance to the payee", function(){
+        let payeeInitialBalance, payeeNewBalance, weiOwedPayee;
+
         return Splitter.deployed()
             .then(_instance => {
                 splitter = _instance;
@@ -71,32 +76,24 @@ contract("Splitter", function(accounts){
                 ])
             })
             .then(_initialBalances => {
-                console.log('_initialBalances ', _initialBalances);
-                var weiOwed = _initialBalances[0];
-                var weiCurrent = _initialBalances[1];
-                var weiCurrentToWei = web3.toWei(_initialBalances[1]);
-                console.log("owed after withdrawing", weiOwed);
-                console.log("current after withdrawing", weiCurrent);
+                weiOwedPayee = _initialBalances[0];
+                payeeInitialBalance = _initialBalances[1];
 
                 return splitter.withdrawFunds(payee1);
             })
             .then(_txObj => {
-                //console.log('_txObj', _txObj);
                 return Promise.all([
                     splitter.balances(payee1),
                     web3.eth.getBalancePromise(payee1)
                 ])
             })
             .then(_finalBalances => {
-                console.log("balance", _finalBalances);
-                var weiOwed = _finalBalances[0];
-                var weiCurrent = _finalBalances[1];
-                console.log("owed after withdrawing", weiOwed);
-                console.log("current after withdrawing", weiCurrent);
+                var currentWeiOwed = _finalBalances[0];
+                payeeNewBalance = _finalBalances[1];
+                assert.strictEqual(currentWeiOwed.toString("10"), "0");
+                assert.strictEqual(payeeInitialBalance.plus(weiOwedPayee).toString("10"), payeeNewBalance.toString("10"));
             })
     });
-
-
 });
 
 
