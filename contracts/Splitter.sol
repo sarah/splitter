@@ -32,7 +32,6 @@ contract Splitter{
         payee2 = _payee2;
     }
 
-
     function depositFunds() payable{
         if(msg.sender == funder){
             var (half,remainder) = calculatePayoutAmounts(msg.value);
@@ -75,7 +74,8 @@ contract Splitter{
     }
 
     function calculatePayoutAmounts(uint depositAmt) internal returns(uint, uint){
-        // TODO what about smaller amounts, like 1 ether: split into wei? 
+        // this should be in Wei, so sending 1 ether should send half of 
+        // that amt in wei to each payee. 
         uint half = depositAmt / 2;
         uint remainder = depositAmt - (half * 2);
         return(half, remainder);
