@@ -24,8 +24,7 @@ contract Splitter{
 
         var (half,remainder) = calculatePayoutAmounts(msg.value);
 
-        // store half with each payee
-        // TODO += in case there is already an amount.
+        // store half with each payee, add to their existing balance
         balances[payee1] += half;
         balances[payee2] += half;
 
