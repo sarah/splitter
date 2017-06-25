@@ -77,13 +77,17 @@ contract("Splitter", function(accounts){
             })
     });
 
-    it("should assign the remainder to the funder", function(){
+    it("should assign the remainder to the funder, and add to funders existing funds", function(){
         return Splitter.deployed()
             .then(_instance => {
                 splitter = _instance;
-                return splitter.depositFunds({from:funder,value:9}) // just 9 wei
+                return Promise.all([
+                    splitter.depositFunds({from:funder,value:9}), // just 9 wei
+                    splitter.depositFunds({from:funder,value:1}) // just 1 wei
+                    ]
+                )
             })
-            .then(_txObj => {
+            .then(_txObjs => {
                 return Promise.all([
                     splitter.balances(payee1),
                     splitter.balances(payee2),
@@ -94,7 +98,7 @@ contract("Splitter", function(accounts){
             .then(results => {
                 assert.strictEqual(results[0].toString(10), "4");
                 assert.strictEqual(results[1].toString(10), "4");
-                assert.strictEqual(results[2].toString(10), "1");
+                assert.strictEqual(results[2].toString(10), "2");
             })
     });
 

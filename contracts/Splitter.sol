@@ -48,7 +48,7 @@ contract Splitter{
         balances[payee2] += half;
 
         // store remainder to return to funder
-        if(remainder > 0) balances[funder] = remainder;
+        if(remainder > 0) balances[funder] += remainder;
     }
 
     function withdrawFunds(address payee){
