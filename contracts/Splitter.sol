@@ -56,6 +56,7 @@ contract Splitter{
         if( balances[payee] == 0 ) throw;
 
         // Do all accounting first; it will be reverted if the send fails below
+        // store value before resetting to 0
         uint amountDue = balances[payee];
         balances[payee] = 0;
         string memory transferType = (payee == funder) ? "issue_remainder" : "payout";
