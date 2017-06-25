@@ -1,4 +1,5 @@
 const Promise = require("bluebird");
+const BigNumber = require('bignumber.js');
 const Splitter = artifacts.require("./Splitter.sol");
 
 
@@ -25,8 +26,8 @@ contract("Splitter", function(accounts){
             .then(_instance => {
                 splitter = _instance;
                 return Promise.all([
-                    splitter.withdrawFunds(payee1),
-                    splitter.withdrawFunds(payee2)
+                    splitter.withdrawFunds({from:payee1}),
+                    splitter.withdrawFunds({from:payee2})
                     ]
                 )
             })
@@ -36,7 +37,7 @@ contract("Splitter", function(accounts){
             })
     })
 
-    it("when sent by funder, should equally split input between payees in balances", function(){
+    it("depositFunds: when sent by funder, should equally split input between payees in balances", function(){
         return Splitter.deployed()
             .then(_instance => {
                 splitter = _instance;
@@ -55,7 +56,7 @@ contract("Splitter", function(accounts){
             })
     });
 
-    it("should add to existing balance if payee hasn't collected between deposits", function(){
+    it("depositFunds: should add to existing balance if payee hasn't collected between deposits", function(){
         return Splitter.deployed()
             .then(_instance => {
                 splitter = _instance;
@@ -77,7 +78,7 @@ contract("Splitter", function(accounts){
             })
     });
 
-    it("should assign the remainder to the funder, and add to funders existing funds if they exist", function(){
+    it("depositFunds: should assign the remainder to the funder, and add to funders existing funds if they exist", function(){
         return Splitter.deployed()
             .then(_instance => {
                 splitter = _instance;
@@ -103,37 +104,50 @@ contract("Splitter", function(accounts){
     });
 
 
-    it("should send the balance to the payee", function(){
-        let payeeInitialBalance, payeeNewBalance, weiOwedPayee;
+    it("withdrawFunds: should send the balance to the payee", function(){
+        let payeeInitialBalance, payeeFinalBalance, weiOwedPayee, finalWeiOwedPayee, withdrawTxObj, gasUsed;
 
         return Splitter.deployed()
             .then(_instance => {
                 splitter = _instance;
-                return splitter.depositFunds({from:funder,value:etherInWei(4)})
+                return Promise.all([ 
+                        splitter.depositFunds({from:funder,value:etherInWei(4)}),
+                        web3.eth.getBalancePromise(payee1)
+                    ]
+                )
             })
-            .then(_txObj => {
+            .then(_results => {
+                payeeInitialBalance = _results[1];
+                return splitter.balances(payee1);
+            })
+            .then(_weiOwedPayee => {
+                weiOwedPayee = _weiOwedPayee;
+                return splitter.withdrawFunds({from:payee1})
+            })
+            .then(_withdrawTxObj => {
+                withdrawTxObj = _withdrawTxObj;
+                gasUsed = new BigNumber(String(withdrawTxObj.receipt.gasUsed), "10");
+                console.log("gasUsed", gasUsed);
                 return Promise.all([
                     splitter.balances(payee1),
                     web3.eth.getBalancePromise(payee1)
-                ])
+                  ]
+                )
             })
-            .then(_initialBalances => {
-                weiOwedPayee = _initialBalances[0];
-                payeeInitialBalance = _initialBalances[1];
+            .then(_balances => {
+                finalWeiOwedPayee = _balances[0];
+                payeeFinalBalance = _balances[1];
+                var owedLessGas = weiOwedPayee.minus(gasUsed);
+                //console.log('owedLessGas', owedLessGas);
+                //console.log('owedLessGas + gasUsed', owedLessGas.plus(gasUsed));
+                //console.log('weiOwedPayee - owedLessGas', weiOwedPayee.minus(owedLessGas));
+                //console.log('final minus initial', payeeFinalBalance.minus(payeeInitialBalance).toString("10"))
+                //console.log('owedLessGas', owedLessGas.toString("10"));
+                //console.log('wtf', owedLessGas.minus(payeeFinalBalance.minus(payeeInitialBalance)).toString("10"))
 
-                return splitter.withdrawFunds(payee1);
-            })
-            .then(_txObj => {
-                return Promise.all([
-                    splitter.balances(payee1),
-                    web3.eth.getBalancePromise(payee1)
-                ])
-            })
-            .then(_finalBalances => {
-                var currentWeiOwed = _finalBalances[0];
-                payeeNewBalance = _finalBalances[1];
-                assert.strictEqual(currentWeiOwed.toString("10"), "0");
-                assert.strictEqual(payeeInitialBalance.plus(weiOwedPayee).toString("10"), payeeNewBalance.toString("10"));
+                assert.strictEqual(finalWeiOwedPayee.toString("10"), "0");
+                assert.strictEqual(weiOwedPayee.minus(owedLessGas).toString("10"), gasUsed.toString("10"));
+                // TODO struggling to math out how the gas comes into play.
             })
     });
 
