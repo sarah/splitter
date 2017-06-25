@@ -38,36 +38,31 @@ contract Splitter{
     }
 
     function depositFunds() payable{
-        if(msg.sender == funder){
-            var (half,remainder) = calculatePayoutAmounts(msg.value);
+        if(msg.sender != funder) throw;
 
-            // store half with each payee
-            balances[payee1] = half;
-            balances[payee2] = half;
+        var (half,remainder) = calculatePayoutAmounts(msg.value);
 
-            // store remainder to return to funder
-            if(remainder > 0) balances[funder] = remainder;
-        } else {
-            throw;
-        }
+        // store half with each payee
+        // TODO += in case there is already an amount.
+        balances[payee1] = half;
+        balances[payee2] = half;
+
+        // store remainder to return to funder
+        if(remainder > 0) balances[funder] = remainder;
     }
 
     function withdrawFunds(address payee){
-        if(isValidPayee(payee)){
-            uint amountDue = balances[payee];
-            if( amountDue > 0 ){
-                if(!payee.send(amountDue)){
-                    throw;
-                } else {
-                    balances[payee] = 0;
-                    
-                    string memory transfer_type = (payee == funder) ? "issue_remainder" : "payout";
-                    LogTransfer(payee, amountDue, transfer_type);
-                }
-            }
-        } else {
-            throw;
-        }
+        if(! isValidPayee(payee) ) throw;
+        if( balances[payee] == 0 ) throw;
+
+        // Optimistic Accounting
+        uint amountDue = balances[payee];
+        balances[payee] = 0;
+        string memory transferType = (payee == funder) ? "issue_remainder" : "payout";
+        LogTransfer(payee, amountDue, transferType);
+
+        // Attempt send
+        if(!payee.send(amountDue)) throw;
     }
 
     function getBalance() returns (uint){
