@@ -53,7 +53,7 @@ contract Splitter{
 
     function withdrawFunds(address payee){
         if(! isValidPayee(payee) ) throw;
-        if( balances[payee] > 0 ){ //throw;
+        if( balances[payee] == 0 ) throw;
 
         // Do all accounting first; it will be reverted if the send fails below
         uint amountDue = balances[payee];
@@ -63,7 +63,7 @@ contract Splitter{
         if(!payee.send(amountDue)) throw;
         string memory transferType = (payee == funder) ? "issue_remainder" : "payout";
         LogTransfer(payee, amountDue, transferType);
-        }
+       
     }
 
     function getBalance() returns (uint){

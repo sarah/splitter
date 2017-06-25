@@ -20,7 +20,7 @@ contract("Splitter", function(accounts){
         Promise.promisifyAll(web3.eth, {suffix: "Promise"});
     });
 
-    beforeEach("payees withdraw", function(){
+    beforeEach("clear out payees balances", function(){
         return Splitter.deployed()
             .then(_instance => {
                 splitter = _instance;
@@ -30,8 +30,9 @@ contract("Splitter", function(accounts){
                     ]
                 )
             })
-            .then(_txo => {
-                console.log("accounts zeroed out");
+            .then(_txo => {})
+            .catch(_err => {
+                // no-op
             })
     })
 
