@@ -20,6 +20,21 @@ contract("Splitter", function(accounts){
         Promise.promisifyAll(web3.eth, {suffix: "Promise"});
     });
 
+    beforeEach("payees withdraw", function(){
+        return Splitter.deployed()
+            .then(_instance => {
+                splitter = _instance;
+                return Promise.all([
+                    splitter.withdrawFunds(payee1),
+                    splitter.withdrawFunds(payee2)
+                    ]
+                )
+            })
+            .then(_txo => {
+                console.log("accounts zeroed out");
+            })
+    })
+
     it("when sent by funder, should equally split input between payees in balances", function(){
         return Splitter.deployed()
             .then(_instance => {
@@ -36,6 +51,28 @@ contract("Splitter", function(accounts){
             .then(results => {
                 assert.strictEqual(results[0].toString(10), etherInWei(2));
                 assert.strictEqual(results[1].toString(10), etherInWei(2));
+            })
+    });
+
+    it("should add to existing balance if payee hasn't collected between deposits", function(){
+        return Splitter.deployed()
+            .then(_instance => {
+                splitter = _instance;
+                return Promise.all([
+                        splitter.depositFunds({from:funder, value: etherInWei(4)}),
+                        splitter.depositFunds({from:funder, value: etherInWei(4)}),
+                    ]
+                )
+            })
+            .then(_tx_results => {
+                return Promise.all([
+                    splitter.balances(payee1),
+                    splitter.balances(payee2),
+                    ]
+                )
+            }).then(balances => {
+                assert.strictEqual(balances[0].toString(10), etherInWei(4));
+                assert.strictEqual(balances[1].toString(10), etherInWei(4));
             })
     });
 

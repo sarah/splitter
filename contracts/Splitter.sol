@@ -44,8 +44,8 @@ contract Splitter{
 
         // store half with each payee
         // TODO += in case there is already an amount.
-        balances[payee1] = half;
-        balances[payee2] = half;
+        balances[payee1] += half;
+        balances[payee2] += half;
 
         // store remainder to return to funder
         if(remainder > 0) balances[funder] = remainder;
@@ -53,16 +53,17 @@ contract Splitter{
 
     function withdrawFunds(address payee){
         if(! isValidPayee(payee) ) throw;
-        if( balances[payee] == 0 ) throw;
+        if( balances[payee] > 0 ){ //throw;
 
-        // Optimistic Accounting
+        // Do all accounting first; it will be reverted if the send fails below
         uint amountDue = balances[payee];
         balances[payee] = 0;
-        string memory transferType = (payee == funder) ? "issue_remainder" : "payout";
-        LogTransfer(payee, amountDue, transferType);
 
         // Attempt send
         if(!payee.send(amountDue)) throw;
+        string memory transferType = (payee == funder) ? "issue_remainder" : "payout";
+        LogTransfer(payee, amountDue, transferType);
+        }
     }
 
     function getBalance() returns (uint){
