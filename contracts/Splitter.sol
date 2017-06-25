@@ -58,12 +58,11 @@ contract Splitter{
         // Do all accounting first; it will be reverted if the send fails below
         uint amountDue = balances[payee];
         balances[payee] = 0;
+        string memory transferType = (payee == funder) ? "issue_remainder" : "payout";
+        LogTransfer(payee, amountDue, transferType);
 
         // Attempt send
         if(!payee.send(amountDue)) throw;
-        string memory transferType = (payee == funder) ? "issue_remainder" : "payout";
-        LogTransfer(payee, amountDue, transferType);
-       
     }
 
     function getBalance() returns (uint){
