@@ -1,18 +1,5 @@
 pragma solidity ^0.4.5;
 
-/*
-I suspect you sense unwanted complexity creeping in. You're still trying to do it all at once and also working with row-wise arrays and loops.
-
-A little nudge in the right direction:
-
-    mapping(address => uint) balances;
-
-function depositFunds() payable {}
-function withdrawFunds() {}
-
-What would happen if the contract just kept track of who is owed and the claimants had to pay for gas to get the funds out?
- */
-
 contract Splitter{
     address funder;
     address payee1;
